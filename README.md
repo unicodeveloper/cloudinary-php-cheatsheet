@@ -1,12 +1,10 @@
-## Cloudinary PHP Cheat Sheet
+# Cloudinary PHP Cheatsheet
 
-Finally a cheat sheet for Cloudinary. Keep in mind this is a work in progress and will be fairly dynamic. It will follow the [docs](http://cloudinary.com/documentation/php_image_upload) closely and I'll try to keep it up to date with new features being added.
+## Introduction
 
-**Live Version Here:**
+A quick reference guide (cheat sheet) for Cloudinary PHP methods.
 
-[Cloudinary PHP Cheat Sheets](http://unicodeveloper.github.io/cloudinary_php_cheatsheet)
+### Live Version Here:
 
+* English: https://unicodeveloper.github.io/cloudinary-php-cheatsheet/
 
-### Contributing
-
-If you see a typo or wish to add/change anything, open an issue or pop up a pull request. Thanks!

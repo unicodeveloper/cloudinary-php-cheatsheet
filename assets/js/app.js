@@ -3,75 +3,11 @@ $(function(){
 	// Allow the user to turn comments off
 	$('.comments-toggle').on('click', function(event){
 		$('span.com').toggle();
+		$('.grid').masonry();
 	});
 
 	// Call prettprint manually
 	prettyPrint();
-
-	// Shine up the HTML:: calls
-	var $html_elements = $("span.pln:contains('HTML')").addClass('typ');
-	var $url_elements = $("span.pln:contains('URL')").removeClass('pln').addClass('typ');
-	var $url_elements = $("span.pln:contains('SSH')").removeClass('pln').addClass('typ');
-	var $url_elements = $("span.pln:contains('DB')").addClass('typ');
-
-	// Allow the user to search for stuff on the page
-	// thanks to the jquery highlight plugin here:
-	// http://johannburkard.de/blog/programming/javascript/highlight-javascript-text-higlighting-jquery-plugin.html
-	var search = function(){
-		var $searchValue = $.trim($('#search').val());
-
-		if ($searchValue === "" || $searchValue === undefined || $searchValue === null)
-		{
-			event.preventDefault();
-			return false;
-		}
-
-		// Get the existing number of values that are highlighted
-		var $values = $('span .highlight');
-
-		// If the search value is the same between more than one submit, go!
-		// btw, global variables are the best, aren't they?!
-		if (window.searchValue === $searchValue && $values.length > 0)
-		{
-			// global fuckin' iterator, man
-			if (window.searchIterator == null || window.searchIterator == $values.length)
-			{
-				window.searchIterator = 0;
-			}
-
-			// dat jquery animate
-			$('html, body').animate({
-				scrollTop: $($values[window.searchIterator]).offset().top - 50
-			}, 10);
-
-			// self-explaining code ftw
-			window.searchIterator++;
-		}
-
-		// global state anyone?
-		window.searchValue = $searchValue;
-
-		// re-highlight in case something's changed
-		// this is probably a pretty expensive DOM call but yolo
-		$("span").removeHighlight();
-		$("span").highlight($searchValue);
-	};
-
-	// I made this so it doesn't have to be a form event
-	// form events append their stuff to the uri
-	$('#search').on('keypress', function(event){
-		if (event.which == 13)
-		{
-			search();
-		}
-	});
-
-	// No form event to clutter the uri with
-	// your search terms
-	$('#search-button').click(search);
-
-	// Focus the user's cursor to the search box on page load
-	$('#search').focus();
 
 	// To the top functionality
 	$('#top-button').on('click', function(event){
@@ -79,8 +15,102 @@ $(function(){
 		return false;
 	});
 
+	// Get cheat sheet title
+	var h4_array = $('h4 a').map(function(){
+			   if ($(this).text().length > 0) {
+					 	var name = $(this).attr('name');
+						var cmd_cell = '<li><a href="' + $(this).attr('href') + '" data-name="'+ name +'">' + $(this).text() + '</a></li>';
+			   		$('.sidebar-menu').append(cmd_cell);
+			   		$('.mobile-cmd-cell').append(cmd_cell);
+						$(this).closest('.cmd-description').attr('id', 'cmd-' + name);
+	               return $(this).text();
+			   }
+  }).get();
+
+	// Reorder sidebar list
+	reorderList($('.sidebar-menu'));
+	reorderList($('.mobile-cmd-cell'));
+	function reorderList(ul) {
+		var items = ul.find('li').get();
+		items.sort(function(a,b){
+		  var keyA = $(a).text();
+		  var keyB = $(b).text();
+
+		  if (keyA < keyB) return -1;
+		  if (keyA > keyB) return 1;
+		  return 0;
+		});
+		$.each(items, function(i, li){
+		  ul.append(li);
+		});
+	}
+
+	// Show or Hide Command Section
+	$('.sidebar-menu li a').click(clickSidebarItem);
+	$('.mobile-cmd-cell li a').click(clickSidebarItem);
+
+	function clickSidebarItem() {
+		var name = $(this).attr('data-name');
+		var cmd_id = 'cmd-' + name;
+		$('.focus-code').remove();
+		$('.code-container').append('<section class="cmd-description focus-code">' + $('#' + cmd_id).html() + '</section>');
+		$('.grid').fadeOut('slow');
+		$('.focus-code').fadeIn('slow', function() {
+			window.scrollTo(0, 0);
+		});
+
+		$('.active-link').removeClass('active-link');
+		$(this).addClass('active-link');
+
+		window.location.hash = name;
+
+		$('[data-close]').trigger('click');
+		return false;
+	}
+
+	// Click check all button
+	$('.check-all-button').click(function () {
+		$('.active-link').removeClass('active-link');
+		$('.focus-code').remove();
+		$('.grid').fadeIn('slow');
+		$('[data-close]').trigger('click');
+		location.hash = '';
+	});
+
+	// Masonry
+	$('.grid').masonry({
+	  // options...
+	  itemSelector: '.grid-item'
+	});
+
+	// Fetch access website event
+	var href = location.href;
+	var anchor = href.split('#')[1];
+	if (anchor) {
+			$('[data-name=' + anchor + ']').trigger('click');
+	}
+
 	// Initialize foundation, or else!
 	$(document).foundation();
+
+	/**
+   * Open External Links In New Window
+   */
+   function initExternalLink(){
+      $('section a[href^="http://"], section a[href^="https://"]').each(function() {
+         var a = new RegExp('/' + window.location.host + '/');
+         if(!a.test(this.href) ) {
+             $(this).click(function(event) {
+                 event.preventDefault();
+                 event.stopPropagation();
+                 window.open(this.href, '_blank');
+             });
+         }
+      });
+  }
+
+	initExternalLink();
+
 
 });
 
